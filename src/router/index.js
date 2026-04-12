@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PlaygroundView from '@/views/PlaygroundView.vue'
 import VendictMinesweeperView from '@/views/VendictMinesweeperView.vue'
+import LogoMatchView from '@/views/LogoMatchView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -14,6 +15,11 @@ const router = createRouter({
       path: '/vendict-minesweeper',
       name: 'vendict-minesweeper',
       component: VendictMinesweeperView,
+    },
+    {
+      path: '/logo-match',
+      name: 'logo-match',
+      component: LogoMatchView,
     },
   ],
 })
