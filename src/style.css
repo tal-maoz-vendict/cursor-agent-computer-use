@@ -20,22 +20,60 @@ body {
   padding: 2rem;
 }
 
-.playground {
-  width: min(42rem, 100%);
+.app-shell {
+  width: min(52rem, 100%);
   background: white;
   border-radius: 1rem;
-  padding: 2rem;
+  padding: 1.5rem;
   box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
 }
 
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
 h1 {
-  margin: 0 0 0.5rem;
-  font-size: clamp(1.5rem, 2vw, 2rem);
+  margin: 0;
+  font-size: clamp(1.4rem, 2vw, 1.9rem);
+}
+
+h2 {
+  margin: 0 0 0.4rem;
 }
 
 p {
-  margin: 0.25rem 0 1.25rem;
+  margin: 0.25rem 0 1.1rem;
   line-height: 1.5;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #1e293b;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.tab-active {
+  background: #c7d2fe;
+}
+
+.view-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  padding: 1.25rem;
 }
 
 .button-row,
@@ -75,4 +113,50 @@ p {
 .status {
   margin-top: 1rem;
   color: #334155;
+}
+
+.minesweeper-toolbar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.board {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.55rem;
+  border-radius: 0.7rem;
+  background: #cbd5e1;
+}
+
+.board-row {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.tile {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.35rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.tile.revealed {
+  background: #dbeafe;
+}
+
+.tile.flagged {
+  background: #fee2e2;
+}
+
+.tile.mine {
+  background: #fecaca;
 }
