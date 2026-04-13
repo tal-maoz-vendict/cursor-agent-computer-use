@@ -4,6 +4,9 @@
       <h1>Demo App</h1>
       <nav class="tabs" aria-label="Main tabs">
         <RouterLink to="/" class="tab" active-class="tab-active">Playground</RouterLink>
+        <RouterLink to="/vendict-questionnaire-studio" class="tab" active-class="tab-active">
+          Vendict Studio
+        </RouterLink>
         <RouterLink to="/vendict-minesweeper" class="tab" active-class="tab-active">
           Vendict Minesweeper
         </RouterLink>
