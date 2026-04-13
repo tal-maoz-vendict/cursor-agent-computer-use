@@ -3,6 +3,7 @@ import PlaygroundView from '@/views/PlaygroundView.vue'
 import VendictMinesweeperView from '@/views/VendictMinesweeperView.vue'
 import LogoMatchView from '@/views/LogoMatchView.vue'
 import VendictQuestionnaireView from '@/views/VendictQuestionnaireView.vue'
+import Vendict2026DemoView from '@/views/Vendict2026DemoView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -26,6 +27,11 @@ const router = createRouter({
       path: '/vendict-questionnaire',
       name: 'vendict-questionnaire',
       component: VendictQuestionnaireView,
+    },
+    {
+      path: '/vendict-2026-demo',
+      name: 'vendict-2026-demo',
+      component: Vendict2026DemoView,
     },
   ],
 })

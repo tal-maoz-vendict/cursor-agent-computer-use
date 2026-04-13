@@ -10,6 +10,9 @@
         <RouterLink to="/vendict-questionnaire" class="tab" active-class="tab-active">
           Vendict Questionnaire
         </RouterLink>
+        <RouterLink to="/vendict-2026-demo" class="tab" active-class="tab-active">
+          Vendict 2026
+        </RouterLink>
         <RouterLink to="/logo-match" class="tab" active-class="tab-active">
           Logo Match
         </RouterLink>
