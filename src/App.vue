@@ -7,6 +7,9 @@
         <RouterLink to="/vendict-minesweeper" class="tab" active-class="tab-active">
           Vendict Minesweeper
         </RouterLink>
+        <RouterLink to="/vendict-questionnaire" class="tab" active-class="tab-active">
+          Vendict Questionnaire
+        </RouterLink>
         <RouterLink to="/logo-match" class="tab" active-class="tab-active">
           Logo Match
         </RouterLink>
