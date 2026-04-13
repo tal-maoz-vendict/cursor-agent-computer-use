@@ -25,6 +25,12 @@ function randomizeMood() {
 function addSparkle() {
   sparkleCount.value += 1
 }
+
+const danielClicks = ref(0)
+
+function clickDaniel() {
+  danielClicks.value += 1
+}
 </script>
 
 <template>
@@ -50,11 +56,15 @@ function addSparkle() {
       <button type="button" class="btn" @click="addSparkle">
         Add sparkle ✨
       </button>
+      <button type="button" class="btn daniel-btn" @click="clickDaniel">
+        daniel
+      </button>
     </section>
 
     <p class="status">
       Mood: <strong>{{ mood }}</strong> | Sparkles collected:
-      <strong>{{ sparkleCount }}</strong>
+      <strong>{{ sparkleCount }}</strong> | Daniel clicks:
+      <strong>{{ danielClicks }}</strong>
     </p>
   </section>
 </template>
