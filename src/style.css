@@ -198,3 +198,107 @@ p {
 .logo-name {
   font-weight: 700;
 }
+
+.questionnaire-view {
+  max-width: 27.5rem;
+  margin: 0 auto;
+}
+
+.questionnaire-card {
+  border: 2px solid #5bc5d4;
+  border-radius: 0.95rem;
+  background: #ffffff;
+  padding: 2rem;
+}
+
+.questionnaire-banner {
+  margin: 0 0 1.5rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.6rem;
+  border: 2px solid #4caf88;
+  background: #e8f8f0;
+  color: #17212b;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.questionnaire-title {
+  margin: 0;
+  text-align: center;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.questionnaire-source {
+  margin: 0.4rem 0 0.8rem;
+  text-align: center;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.questionnaire-description {
+  margin: 0 0 1.2rem;
+  text-align: center;
+  color: #475569;
+}
+
+.questionnaire-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 0.85rem;
+  width: 100%;
+  min-height: 2.85rem;
+  border-radius: 0.55rem;
+  border: 1px solid #d1d5db;
+  padding: 0 0.85rem;
+  font-size: 0.95rem;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.questionnaire-spinner {
+  width: 1.3rem;
+  height: 1.3rem;
+  margin: 0.8rem auto 1rem;
+  border: 3px solid #d9defa;
+  border-top-color: #5b6fd8;
+  border-radius: 50%;
+  animation: questionnaire-spin 1s linear infinite;
+}
+
+.questionnaire-btn {
+  width: 100%;
+  min-height: 2.85rem;
+  border-radius: 0.55rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: default;
+}
+
+.questionnaire-btn-primary {
+  border: none;
+  color: #ffffff;
+  background: #5b6fd8;
+}
+
+.questionnaire-btn-secondary {
+  border: 2px solid #5b6fd8;
+  color: #5b6fd8;
+  background: #ffffff;
+}
+
+.questionnaire-helper {
+  margin: 0.55rem 0 1rem;
+  text-align: center;
+  font-size: 0.86rem;
+  color: #64748b;
+}
+
+@keyframes questionnaire-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
