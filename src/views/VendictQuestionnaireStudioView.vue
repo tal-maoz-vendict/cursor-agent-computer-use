@@ -213,20 +213,21 @@ function clearQuestionnaire() {
 }
 
 .studio-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
   gap: 1rem;
   align-items: stretch;
 }
 
 .studio-panel {
+  flex: 1 1 0;
   border: 2px solid #5bc5d4;
   border-radius: 0.95rem;
   background: #ffffff;
   padding: 1.25rem;
-  min-height: 37rem;
+  height: 37rem;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .questionnaire-banner {
@@ -431,7 +432,13 @@ function clearQuestionnaire() {
 
 @media (max-width: 960px) {
   .studio-grid {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .studio-panel {
+    height: auto;
+    min-height: 0;
+    overflow-y: visible;
   }
 }
 </style>
