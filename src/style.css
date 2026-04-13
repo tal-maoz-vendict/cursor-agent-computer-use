@@ -198,3 +198,135 @@ p {
 .logo-name {
   font-weight: 700;
 }
+
+.customer-card-demo {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+}
+
+.customer-card {
+  width: min(27rem, 100%);
+  background: #fff;
+  border-radius: 0.85rem;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  border: 1px solid #eef2ff;
+  padding: 1.35rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.customer-card-title {
+  margin: 0;
+  text-align: center;
+  font-size: 1.45rem;
+  color: #111827;
+}
+
+.customer-alert {
+  border: 1px solid #fcd34d;
+  background: #fef3c7;
+  color: #3f3f46;
+  border-radius: 0.5rem;
+  padding: 0.7rem 0.8rem;
+  font-size: 0.92rem;
+}
+
+.customer-action {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.customer-note {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.customer-btn-primary {
+  background: #3b82f6;
+  color: #fff;
+  border-radius: 0.45rem;
+  width: fit-content;
+}
+
+.customer-btn-outline {
+  background: #fff;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  border-radius: 0.45rem;
+  width: fit-content;
+}
+
+.customer-btn-danger {
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 0.45rem;
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.info-icon,
+.warning-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.customer-modal {
+  width: min(25rem, 100%);
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.16);
+  background: #fff;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.customer-modal h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.customer-modal p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.92rem;
+}
+
+.customer-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.warning-icon {
+  color: #9ca3af;
+}
+
+.customer-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.customer-btn-ghost {
+  background: transparent;
+  color: #6b7280;
+}
+
+.customer-btn-delete {
+  background: #dc2626;
+  color: #fff;
+  border-radius: 0.45rem;
+}
