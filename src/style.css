@@ -198,3 +198,316 @@ p {
 .logo-name {
   font-weight: 700;
 }
+
+/* Vendor assessment (Vendict 2026) */
+.va-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.va-hero {
+  display: grid;
+  grid-template-columns: 1fr minmax(12rem, 14rem);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .va-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+.va-brand {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.va-mark {
+  flex-shrink: 0;
+  display: inline-flex;
+  padding: 0.35rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(145deg, #eef2ff, #ecfeff);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.va-eyebrow {
+  margin: 0 0 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6366f1;
+}
+
+.va-title {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  letter-spacing: -0.02em;
+}
+
+.va-lead {
+  margin: 0;
+  max-width: 36rem;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.va-score-card {
+  border-radius: 1rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(160deg, #1e1b4b 0%, #312e81 55%, #0f172a 100%);
+  color: #e0e7ff;
+  box-shadow: 0 14px 40px rgba(30, 27, 75, 0.35);
+}
+
+.va-score-card[data-tier='low'] {
+  background: linear-gradient(160deg, #14532d 0%, #166534 50%, #052e16 100%);
+}
+
+.va-score-card[data-tier='medium'] {
+  background: linear-gradient(160deg, #713f12 0%, #92400e 50%, #422006 100%);
+}
+
+.va-score-card[data-tier='high'],
+.va-score-card[data-tier='critical'] {
+  background: linear-gradient(160deg, #7f1d1d 0%, #991b1b 50%, #450a0a 100%);
+}
+
+.va-score-label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.va-score-value {
+  margin: 0.15rem 0 0;
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.va-score-tier {
+  margin: 0.35rem 0 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+.va-mini-stats {
+  margin: 0;
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+}
+
+.va-mini-stats div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.va-mini-stats dt {
+  margin: 0;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.va-mini-stats dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.va-workflow {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  padding: 0.9rem 1rem;
+  background: #f8fafc;
+}
+
+.va-steps {
+  list-style: none;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.va-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: capitalize;
+}
+
+.va-step-active {
+  color: #312e81;
+}
+
+.va-step-done {
+  color: #15803d;
+}
+
+.va-step-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.va-step-active .va-step-dot {
+  background: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+.va-step-done .va-step-dot {
+  background: #22c55e;
+}
+
+.va-gate {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #334155;
+  line-height: 1.45;
+}
+
+.va-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: flex-end;
+}
+
+.va-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: min(100%, 16rem);
+}
+
+.va-field-grow {
+  flex: 1 1 16rem;
+}
+
+.va-field-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.va-input {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+  background: #fff;
+  color: #0f172a;
+}
+
+.va-input:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+.va-input-table {
+  width: 100%;
+  min-width: 0;
+}
+
+.va-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.va-toast {
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.65rem;
+  background: #1e293b;
+  color: #f1f5f9;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.va-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  background: #fff;
+}
+
+.va-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.va-table th,
+.va-table td {
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.va-table th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.va-table tr:last-child td {
+  border-bottom: none;
+}
+
+.va-cell-title {
+  display: block;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.va-cell-meta {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.va-select {
+  width: 100%;
+  min-width: 7.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.55rem;
+  padding: 0.45rem 0.5rem;
+  font: inherit;
+  background: #fff;
+  color: #0f172a;
+}
+
+.va-select:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 1px;
+}
+
+.va-footnote {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.45;
+}

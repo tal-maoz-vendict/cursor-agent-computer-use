@@ -10,6 +10,9 @@
         <RouterLink to="/logo-match" class="tab" active-class="tab-active">
           Logo Match
         </RouterLink>
+        <RouterLink to="/vendor-assessment" class="tab" active-class="tab-active">
+          Vendor assessment
+        </RouterLink>
       </nav>
     </header>
 
