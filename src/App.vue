@@ -13,6 +13,7 @@
         <RouterLink to="/logo-match" class="tab" active-class="tab-active">
           Logo Match
         </RouterLink>
+        <RouterLink to="/boaz-demo" class="tab" active-class="tab-active">Boaz demo</RouterLink>
       </nav>
     </header>
 
