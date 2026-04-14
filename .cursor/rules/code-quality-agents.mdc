@@ -1,0 +1,40 @@
+---
+description: Core code quality rules imported from developer console (rules 1-5)
+alwaysApply: true
+---
+
+# Code Quality (Imported 1-5)
+
+These are the project-wide code quality rules for all agents.
+
+## 1) Read the manual and follow vendor best practices
+
+- Before implementing, check reliable official docs for the framework, package, or platform involved.
+- Prefer implementation patterns intended by the vendor/maintainers over ad-hoc shortcuts.
+
+## 2) Keep files short; split by nested structure
+
+- No single source file should exceed 250 lines where practical.
+- If a component/module grows, split into smaller focused pieces.
+- Prefer TypeScript for new code when the codebase supports it.
+
+## 3) Vue components use recursive folder nesting
+
+- Parent and child components should not live flat in one folder when composition grows.
+- Use one folder per feature/component root.
+- Keep the main component file at folder root, with `components/` for direct children.
+- If a child has children, repeat the same pattern recursively.
+- Use `assets/` for styles shared by that component subtree.
+
+## 4) Non-Vue code uses block-based module structure
+
+- For stores/services/api/logic blocks, use one folder per block with a clear entry file.
+- Split internals by role (for example `handlers/`, `services/`, `adapters/`, `utils/`) as complexity grows.
+- Keep each file short and single-purpose; split further as needed.
+
+## 5) Apply consistently across the app
+
+- Each top-level view/feature should have a clear folder boundary.
+- Keep shared/global styles in common assets location; keep feature-specific styles inside feature folders.
+- Keep shared logic centralized (composables/shared utils/common modules).
+- Keep functions small and focused; avoid long mixed-responsibility files and functions.
