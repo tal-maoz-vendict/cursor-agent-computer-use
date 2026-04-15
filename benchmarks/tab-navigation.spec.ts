@@ -85,18 +85,21 @@ function scoreForMs(ms: number): string {
   return 'Fail'
 }
 
-/** Subscribe before navigation so synchronous onMounted logs are not missed. */
+/**
+ * Subscribe before navigation so synchronous onMounted logs are not missed.
+ * Call `markStart` immediately before the user action that enters the tab (e.g. sidebar click).
+ */
 function subscribeMountedComplete(
   page: Page,
   expected: string[],
-  startTime: number,
   timeoutMs: number,
-): Promise<number> {
+): { markStart: () => void; done: Promise<number> } {
   const pending = new Set(expected)
-  return new Promise<number>((resolve, reject) => {
+  let startTime = 0
+  const done = new Promise<number>((resolve, reject) => {
     const handler = (msg: { text: () => string }) => {
       const text = msg.text()
-      const m = /^Mounted (.+)$/.exec(text)
+      const m = /^onMounted (.+)$/.exec(text)
       if (!m) return
       const name = m[1]
       if (pending.has(name)) {
@@ -104,7 +107,11 @@ function subscribeMountedComplete(
         if (pending.size === 0) {
           page.off('console', handler)
           clearTimeout(timer)
-          resolve(performance.now() - startTime)
+          if (startTime === 0) {
+            reject(new Error('markStart() was not called before mounts completed'))
+          } else {
+            resolve(performance.now() - startTime)
+          }
         }
       }
     }
@@ -118,22 +125,34 @@ function subscribeMountedComplete(
       )
     }, timeoutMs)
   })
+  return {
+    markStart: () => {
+      startTime = performance.now()
+    },
+    done,
+  }
+}
+
+function sidebarTabLink(page: Page, path: TabPath) {
+  return page
+    .getByRole('navigation', { name: 'Vendor hub tabs' })
+    .getByRole('link', { name: TAB_LABEL[path] })
 }
 
 async function goToTab(page: Page, path: TabPath, samples: TabSample[]): Promise<void> {
   const url = page.url()
   const onTarget = url.endsWith(path) || url.includes(`${path}?`) || url.includes(`${path}#`)
   if (onTarget) {
-    const pivot = path === '/home' ? '/library' : '/home'
-    await page.goto(pivot)
+    const pivot: TabPath = path === '/home' ? '/library' : '/home'
+    await sidebarTabLink(page, pivot).click()
     await page.waitForURL(`**${pivot}`)
   }
   const expected = EXPECTED_MOUNTED_BY_TAB[path]
-  const start = performance.now()
-  const mountedPromise = subscribeMountedComplete(page, expected, start, 30_000)
-  await page.goto(path)
+  const { markStart, done } = subscribeMountedComplete(page, expected, 30_000)
+  markStart()
+  await sidebarTabLink(page, path).click()
   await page.waitForURL(`**${path}`)
-  const elapsedMs = await mountedPromise
+  const elapsedMs = await done
   samples.push({ tab: path, ms: elapsedMs })
 }
 
@@ -166,9 +185,12 @@ test('tab navigation mount latency', async ({ page }) => {
     ...TAB_PATHS.map((p) => ({ label: TAB_LABEL[p], ms: byTab.get(p) ?? [] })),
   ]
 
-  console.log('\n=== Tab navigation benchmark (ms) ===\n')
+  console.log('\n=== Tab navigation benchmark (ms) ===')
   console.log(
-    '| Scope | Avg (ms) | Min | Max | Std dev | Score (avg) | Score (max) |\n|---|---:|---:|---:|---:|---:|---|---|',
+    'Score from average latency: Good <3s, Medium <5s, Low <7s, Fail ≥7s.\n',
+  )
+  console.log(
+    '| Scope | Avg (ms) | Min | Max | Std dev | Score |\n|---|---:|---:|---:|---:|---|',
   )
   for (const { label, ms } of rows) {
     const avg = mean(ms)
@@ -176,7 +198,7 @@ test('tab navigation mount latency', async ({ page }) => {
     const mx = Math.max(...ms)
     const sd = stdDev(ms)
     console.log(
-      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} | ${scoreForMs(mx)} |`,
+      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} |`,
     )
   }
   console.log('')
