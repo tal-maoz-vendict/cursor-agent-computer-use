@@ -18,7 +18,7 @@ import VendorProjectsSection from '@/views/home/components/VendorProjectsSection
 import VendorScoreGrid from '@/views/home/components/VendorScoreGrid.vue'
 
 onMounted(() => {
-  console.log('onMounted HomeView')
+  console.log('Mounted HomeView')
 })
 </script>
 

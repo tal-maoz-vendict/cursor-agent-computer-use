@@ -72,7 +72,7 @@ function formatLifecycleItem(item: ProjectLifecycleItem): string {
 }
 
 onMounted(() => {
-  console.log('onMounted VendorProjectsSection')
+  console.log('Mounted VendorProjectsSection')
 })
 </script>
 

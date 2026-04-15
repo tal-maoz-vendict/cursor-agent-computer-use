@@ -2,7 +2,7 @@
 import { onMounted } from 'vue'
 
 onMounted(() => {
-  console.log('onMounted VendorScoreGrid')
+  console.log('Mounted VendorScoreGrid')
 })
 </script>
 
