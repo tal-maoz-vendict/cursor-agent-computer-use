@@ -7,13 +7,15 @@
     "dev": "vite",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false",
     "build": "npm run type-check && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "benchmark:tabs": "playwright test benchmarks/tab-navigation.spec.ts"
   },
   "dependencies": {
     "vue": "^3.5.31",
     "vue-router": "^5.0.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "@tsconfig/node22": "^22.0.5",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/tsconfig": "^0.9.1",
