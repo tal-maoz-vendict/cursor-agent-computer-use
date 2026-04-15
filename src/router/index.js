@@ -1,31 +1,66 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import PlaygroundView from '@/views/PlaygroundView.vue'
-import VendictMinesweeperView from '@/views/VendictMinesweeperView.vue'
-import LogoMatchView from '@/views/LogoMatchView.vue'
-import VendorAssessmentView from '@/views/VendorAssessmentView.vue'
+import HomeView from '@/views/HomeView.vue'
+import PlaceholderView from '@/views/PlaceholderView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/',
-      name: 'playground',
-      component: PlaygroundView,
+      redirect: '/home',
     },
     {
-      path: '/vendict-minesweeper',
-      name: 'vendict-minesweeper',
-      component: VendictMinesweeperView,
+      path: '/home',
+      name: 'home',
+      component: HomeView,
     },
     {
-      path: '/logo-match',
-      name: 'logo-match',
-      component: LogoMatchView,
+      path: '/risk-per-domain',
+      name: 'risk-per-domain',
+      component: PlaceholderView,
+      meta: {
+        title: 'Risk Per Domain',
+      },
     },
     {
-      path: '/vendor-assessment',
-      name: 'vendor-assessment',
-      component: VendorAssessmentView,
+      path: '/contacts',
+      name: 'contacts',
+      component: PlaceholderView,
+      meta: {
+        title: 'Contacts',
+      },
+    },
+    {
+      path: '/reports',
+      name: 'reports',
+      component: PlaceholderView,
+      meta: {
+        title: 'Reports',
+      },
+    },
+    {
+      path: '/external-risks',
+      name: 'external-risks',
+      component: PlaceholderView,
+      meta: {
+        title: 'External Risks',
+      },
+    },
+    {
+      path: '/workflows',
+      name: 'workflows',
+      component: PlaceholderView,
+      meta: {
+        title: 'Workflows',
+      },
+    },
+    {
+      path: '/library',
+      name: 'library',
+      component: PlaceholderView,
+      meta: {
+        title: 'Library',
+      },
     },
   ],
 })
