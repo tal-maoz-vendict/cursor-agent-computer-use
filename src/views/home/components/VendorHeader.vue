@@ -2,7 +2,7 @@
 import { onMounted } from 'vue'
 
 onMounted(() => {
-  console.log('onMounted VendorHeader')
+  console.log('Mounted VendorHeader')
 })
 </script>
 

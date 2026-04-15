@@ -2,7 +2,7 @@
 import { onMounted } from 'vue'
 
 onMounted(() => {
-  console.log('onMounted VendorProfileCard')
+  console.log('Mounted VendorProfileCard')
 })
 </script>
 

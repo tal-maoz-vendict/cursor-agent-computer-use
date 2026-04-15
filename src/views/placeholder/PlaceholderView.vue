@@ -6,7 +6,7 @@ const route = useRoute()
 const pageTitle = computed<string>(() => route.meta.title || 'Page')
 
 onMounted(() => {
-  console.log('onMounted PlaceholderView')
+  console.log('Mounted PlaceholderView')
 })
 </script>
 
