@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 
+import { reportMounted } from '@/utils/reportMounted'
+
 onMounted(() => {
-  console.log('onMounted VendorDetailsGrid')
+  reportMounted('VendorDetailsGrid')
 })
 </script>
 

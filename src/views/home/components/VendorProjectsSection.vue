@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 
+import { reportMounted } from '@/utils/reportMounted'
+
 enum ProjectStage {
   Contender = 'Contender',
   Pending = 'Pending',
@@ -72,7 +74,7 @@ function formatLifecycleItem(item: ProjectLifecycleItem): string {
 }
 
 onMounted(() => {
-  console.log('onMounted VendorProjectsSection')
+  reportMounted('VendorProjectsSection')
 })
 </script>
 
