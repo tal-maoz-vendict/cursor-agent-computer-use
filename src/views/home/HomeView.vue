@@ -8,7 +8,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import VendorDetailsGrid from '@/views/home/components/VendorDetailsGrid.vue'
 import VendorHeader from '@/views/home/components/VendorHeader.vue'
 import VendorProfileCard from '@/views/home/components/VendorProfileCard.vue'

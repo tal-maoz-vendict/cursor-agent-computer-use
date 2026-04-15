@@ -12,7 +12,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import SidebarNav from '@/components/vendorHubLayout/components/SidebarNav.vue'
 import TopBar from '@/components/vendorHubLayout/components/TopBar.vue'
 </script>

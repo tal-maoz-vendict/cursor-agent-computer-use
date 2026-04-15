@@ -16,7 +16,7 @@ These are the project-wide code quality rules for all agents.
 
 - No single source file should exceed 250 lines where practical.
 - If a component/module grows, split into smaller focused pieces.
-- Prefer TypeScript for new code when the codebase supports it.
+- Use TypeScript by default for all application code; do not add new `.js` files in `src/`.
 
 ## 3) Vue components use recursive folder nesting
 
@@ -38,3 +38,21 @@ These are the project-wide code quality rules for all agents.
 - Keep shared/global styles in common assets location; keep feature-specific styles inside feature folders.
 - Keep shared logic centralized (composables/shared utils/common modules).
 - Keep functions small and focused; avoid long mixed-responsibility files and functions.
+
+## 6) Enforce strict TypeScript
+
+- Keep strict compiler settings enabled (`strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`).
+- Prefer explicit interfaces/types for domain data and component contracts.
+- Use enums or union types for constrained values (for example route names, statuses, or modes).
+- Avoid `any`; if unavoidable, use `unknown` first and narrow safely.
+
+## 7) Type Vue components deliberately
+
+- Use `<script setup lang="ts">` in Vue SFCs that have script logic.
+- Type reactive/computed values when inference is weak or route/meta data is involved.
+- Extract reusable TS types into feature-level type files when data shapes are shared.
+
+## 8) Keep TS quality verifiable
+
+- Ensure the project has a working `type-check` script and run it after substantial edits.
+- Keep Vite/router/app entrypoints in TypeScript where supported by the toolchain.

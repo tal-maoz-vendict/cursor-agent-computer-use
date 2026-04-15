@@ -1,5 +1,29 @@
-<script setup>
-const projects = [
+<script setup lang="ts">
+enum ProjectStage {
+  Contender = 'Contender',
+  Pending = 'Pending',
+  Winner = 'Winner',
+  Onboarding = 'Onboarding',
+  Offboarding = 'Off-boarding',
+  UnderReview = 'Under Review',
+  Ongoing = 'Ongoing',
+}
+
+interface ProjectLifecycleItem {
+  stage: ProjectStage
+  date: string
+}
+
+interface Project {
+  name: string
+  riskSummary: string
+  dueDate: string
+  engagement: string
+  domains: string
+  lifecycle: ProjectLifecycleItem[]
+}
+
+const projects: Project[] = [
   {
     name: 'Turbines X',
     riskSummary: 'Tier 2 · Risk Score 88',
@@ -7,11 +31,11 @@ const projects = [
     engagement: 'Caesarea water turbines',
     domains: 'IT security, System Maintenance, API Integration, Firmware',
     lifecycle: [
-      'Contender · Mar 2 2026',
-      'Pending · Mar 15 2026',
-      'Winner · Apr 2 2026',
-      'Onboarding · Apr 10 2026',
-      'Off-boarding · Jun 1 2026',
+      { stage: ProjectStage.Contender, date: 'Mar 2 2026' },
+      { stage: ProjectStage.Pending, date: 'Mar 15 2026' },
+      { stage: ProjectStage.Winner, date: 'Apr 2 2026' },
+      { stage: ProjectStage.Onboarding, date: 'Apr 10 2026' },
+      { stage: ProjectStage.Offboarding, date: 'Jun 1 2026' },
     ],
   },
   {
@@ -20,7 +44,11 @@ const projects = [
     dueDate: '30 May 2026',
     engagement: 'Caesarea water turbines',
     domains: 'Firmware, Security, Fire Doors',
-    lifecycle: ['Contender · Mar 2 2026', 'Winner · Apr 15 2026', 'Off-boarding · Jun 1 2026'],
+    lifecycle: [
+      { stage: ProjectStage.Contender, date: 'Mar 2 2026' },
+      { stage: ProjectStage.Winner, date: 'Apr 15 2026' },
+      { stage: ProjectStage.Offboarding, date: 'Jun 1 2026' },
+    ],
   },
   {
     name: 'Turbines ZZ',
@@ -29,13 +57,17 @@ const projects = [
     engagement: 'Caesarea water turbines',
     domains: 'Firmware, Security, Fire Doors',
     lifecycle: [
-      'Under Review · Mar 2 2026',
-      'Onboarding · Mar 10 2026',
-      'Winner · Apr 15 2026',
-      'Ongoing · Apr 18 2026',
+      { stage: ProjectStage.UnderReview, date: 'Mar 2 2026' },
+      { stage: ProjectStage.Onboarding, date: 'Mar 10 2026' },
+      { stage: ProjectStage.Winner, date: 'Apr 15 2026' },
+      { stage: ProjectStage.Ongoing, date: 'Apr 18 2026' },
     ],
   },
 ]
+
+function formatLifecycleItem(item: ProjectLifecycleItem): string {
+  return `${item.stage} · ${item.date}`
+}
 </script>
 
 <template>
@@ -60,8 +92,11 @@ const projects = [
         <p><strong>Engagement:</strong> {{ project.engagement }}</p>
         <p><strong>Domains:</strong> {{ project.domains }}</p>
         <div class="lifecycle-row">
-          <span v-for="phase in project.lifecycle" :key="`${project.name}-${project.dueDate}-${phase}`">
-            {{ phase }}
+          <span
+            v-for="item in project.lifecycle"
+            :key="`${project.name}-${project.dueDate}-${item.stage}-${item.date}`"
+          >
+            {{ formatLifecycleItem(item) }}
           </span>
         </div>
       </article>
