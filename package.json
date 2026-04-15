@@ -6,14 +6,17 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "benchmark:tabs": "node scripts/tab-nav-benchmark.mjs"
   },
   "dependencies": {
     "vue": "^3.5.31",
     "vue-router": "^5.0.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.0",
     "@vitejs/plugin-vue": "^6.0.5",
+    "playwright": "^1.51.0",
     "vite": "^8.0.3",
     "vite-plugin-vue-devtools": "^8.1.1"
   },
