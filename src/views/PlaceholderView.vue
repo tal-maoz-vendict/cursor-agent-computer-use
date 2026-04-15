@@ -1,10 +1,14 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
 
 const pageTitle = computed(() => route.meta.title || 'Page')
+
+onMounted(() => {
+  console.log(`Mounted ${pageTitle.value}`)
+})
 </script>
 
 <template>

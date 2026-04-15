@@ -1,4 +1,8 @@
 <script setup>
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+
 const sidebarTabs = [
   { label: 'Home', to: '/home', icon: 'home' },
   { label: 'Risk Per Domain', to: '/risk-per-domain', icon: 'risk' },
@@ -58,7 +62,7 @@ const iconPaths = {
       </header>
 
       <main class="vh-main">
-        <RouterView />
+        <RouterView :key="route.fullPath" />
       </main>
     </div>
   </div>

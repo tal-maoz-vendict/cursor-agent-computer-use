@@ -1,3 +1,9 @@
+<script setup>
+import { useMountProbe } from '@/composables/useMountProbe'
+
+useMountProbe('HomeView')
+</script>
+
 <template>
   <section class="vendor-home">
     <div class="vendor-header-row">
