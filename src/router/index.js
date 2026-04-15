@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '@/views/HomeView.vue'
-import PlaceholderView from '@/views/PlaceholderView.vue'
+import HomeView from '@/views/home/HomeView.vue'
+import PlaceholderView from '@/views/placeholder/PlaceholderView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
