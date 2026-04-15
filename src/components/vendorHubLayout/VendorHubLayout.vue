@@ -13,8 +13,14 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
+
 import SidebarNav from '@/components/vendorHubLayout/components/SidebarNav.vue'
 import TopBar from '@/components/vendorHubLayout/components/TopBar.vue'
+
+onMounted(() => {
+  console.log('onMounted VendorHubLayout')
+})
 </script>
 
 <style scoped>

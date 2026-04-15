@@ -9,11 +9,17 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
+
 import VendorDetailsGrid from '@/views/home/components/VendorDetailsGrid.vue'
 import VendorHeader from '@/views/home/components/VendorHeader.vue'
 import VendorProfileCard from '@/views/home/components/VendorProfileCard.vue'
 import VendorProjectsSection from '@/views/home/components/VendorProjectsSection.vue'
 import VendorScoreGrid from '@/views/home/components/VendorScoreGrid.vue'
+
+onMounted(() => {
+  console.log('onMounted HomeView')
+})
 </script>
 
 <style scoped>

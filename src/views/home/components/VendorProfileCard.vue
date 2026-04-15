@@ -1,3 +1,11 @@
+<script setup lang="ts">
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  console.log('onMounted VendorProfileCard')
+})
+</script>
+
 <template>
   <article class="vendor-card">
     <div class="vendor-card-main">

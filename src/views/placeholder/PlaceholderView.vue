@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const pageTitle = computed<string>(() => route.meta.title || 'Page')
+
+onMounted(() => {
+  console.log('onMounted PlaceholderView')
+})
 </script>
 
 <template>

@@ -1,3 +1,11 @@
+<script setup lang="ts">
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  console.log('onMounted TopBar')
+})
+</script>
+
 <template>
   <header class="vh-topbar">
     <p class="vh-breadcrumb">TPRM &gt; Vendors &amp; Projects &gt; Turbines Technologies Inc.</p>

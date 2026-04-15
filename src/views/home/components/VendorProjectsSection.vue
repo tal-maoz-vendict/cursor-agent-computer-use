@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
+
 enum ProjectStage {
   Contender = 'Contender',
   Pending = 'Pending',
@@ -68,6 +70,10 @@ const projects: Project[] = [
 function formatLifecycleItem(item: ProjectLifecycleItem): string {
   return `${item.stage} · ${item.date}`
 }
+
+onMounted(() => {
+  console.log('onMounted VendorProjectsSection')
+})
 </script>
 
 <template>

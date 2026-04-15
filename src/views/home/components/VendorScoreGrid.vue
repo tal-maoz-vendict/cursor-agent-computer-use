@@ -1,3 +1,11 @@
+<script setup lang="ts">
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  console.log('onMounted VendorScoreGrid')
+})
+</script>
+
 <template>
   <section class="score-grid">
     <article class="score-card">

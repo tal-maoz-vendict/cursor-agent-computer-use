@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
+
 enum SidebarIcon {
   Home = 'home',
   Risk = 'risk',
@@ -39,6 +41,10 @@ const iconPaths: Record<SidebarIcon, string> = {
   [SidebarIcon.Library]:
     'M6 4h5.5v16H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm6.5 0H18a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5.5',
 }
+
+onMounted(() => {
+  console.log('onMounted SidebarNav')
+})
 </script>
 
 <template>

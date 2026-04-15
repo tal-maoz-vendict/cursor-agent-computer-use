@@ -1,3 +1,11 @@
+<script setup lang="ts">
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  console.log('onMounted VendorHeader')
+})
+</script>
+
 <template>
   <div class="vendor-header-row">
     <p class="vendor-back-link">← All Vendors</p>
