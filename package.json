@@ -7,7 +7,8 @@
     "dev": "vite",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false",
     "build": "npm run type-check && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "benchmark:tabs": "node scripts/measure-tab-navigation.mjs"
   },
   "dependencies": {
     "vue": "^3.5.31",
@@ -20,7 +21,8 @@
     "typescript": "^6.0.2",
     "vite": "^8.0.3",
     "vite-plugin-vue-devtools": "^8.1.1",
-    "vue-tsc": "^3.2.6"
+    "vue-tsc": "^3.2.6",
+    "playwright": "^1.55.0"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
