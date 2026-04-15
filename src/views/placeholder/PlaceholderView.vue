@@ -2,11 +2,13 @@
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 
+import { reportMounted } from '@/utils/reportMounted'
+
 const route = useRoute()
 const pageTitle = computed<string>(() => route.meta.title || 'Page')
 
 onMounted(() => {
-  console.log('onMounted PlaceholderView')
+  reportMounted('PlaceholderView')
 })
 </script>
 

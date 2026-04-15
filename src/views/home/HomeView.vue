@@ -16,9 +16,10 @@ import VendorHeader from '@/views/home/components/VendorHeader.vue'
 import VendorProfileCard from '@/views/home/components/VendorProfileCard.vue'
 import VendorProjectsSection from '@/views/home/components/VendorProjectsSection.vue'
 import VendorScoreGrid from '@/views/home/components/VendorScoreGrid.vue'
+import { reportMounted } from '@/utils/reportMounted'
 
 onMounted(() => {
-  console.log('onMounted HomeView')
+  reportMounted('HomeView')
 })
 </script>
 
