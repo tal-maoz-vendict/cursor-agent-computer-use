@@ -2,9 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import PlaceholderView from '@/views/PlaceholderView.vue'
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes: [
+/** Route table shared with tests (paths must match sidebar links in App.vue). */
+export const routes = [
     {
       path: '/',
       redirect: '/home',
@@ -62,7 +61,11 @@ const router = createRouter({
         title: 'Library',
       },
     },
-  ],
+]
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
 })
 
 export default router
