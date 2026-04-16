@@ -1,5 +1,31 @@
 import { expect, test, type Page } from '@playwright/test'
 
+/** Chromium CDP: aligns with DevTools-style Fast 4G / Slow 4G presets (throughput in bytes/s). */
+type NetworkProfile = 'fast4g' | 'slow4g'
+
+/** Values aligned with Chrome DevTools / Puppeteer `PredefinedNetworkConditions` (bytes/s, ms). */
+const NETWORK_PRESETS: Record<
+  NetworkProfile,
+  { downloadThroughput: number; uploadThroughput: number; latency: number }
+> = {
+  fast4g: { downloadThroughput: 1_012_500, uploadThroughput: 168_750, latency: 165 },
+  slow4g: { downloadThroughput: 180_000, uploadThroughput: 84_375, latency: 562.5 },
+}
+
+const MOUNT_COMPLETE_TIMEOUT_MS: Record<NetworkProfile, number> = {
+  fast4g: 60_000,
+  slow4g: 180_000,
+}
+
+async function emulateNetwork(page: Page, profile: NetworkProfile): Promise<void> {
+  const client = await page.context().newCDPSession(page)
+  await client.send('Network.enable')
+  await client.send('Network.emulateNetworkConditions', {
+    offline: false,
+    ...NETWORK_PRESETS[profile],
+  })
+}
+
 const TAB_PATHS = [
   '/home',
   '/risk-per-domain',
@@ -85,6 +111,23 @@ function scoreForMs(ms: number): string {
   return 'Fail'
 }
 
+function printResultsTable(profileLabel: string, rows: { label: string; ms: number[] }[]): void {
+  console.log(`\n=== Tab navigation benchmark — ${profileLabel} (ms) ===\n`)
+  console.log(
+    '| Scope | Avg (ms) | Min | Max | Std dev | Score |\n|---|---:|---:|---:|---:|---|',
+  )
+  for (const { label, ms } of rows) {
+    const avg = mean(ms)
+    const mn = Math.min(...ms)
+    const mx = Math.max(...ms)
+    const sd = stdDev(ms)
+    console.log(
+      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} |`,
+    )
+  }
+  console.log('')
+}
+
 /** Subscribe before navigation so synchronous onMounted logs are not missed. */
 function subscribeMountedComplete(
   page: Page,
@@ -96,7 +139,7 @@ function subscribeMountedComplete(
   return new Promise<number>((resolve, reject) => {
     const handler = (msg: { text: () => string }) => {
       const text = msg.text()
-      const m = /^Mounted (.+)$/.exec(text)
+      const m = /^onMounted (.+)$/.exec(text)
       if (!m) return
       const name = m[1]
       if (pending.has(name)) {
@@ -120,7 +163,12 @@ function subscribeMountedComplete(
   })
 }
 
-async function goToTab(page: Page, path: TabPath, samples: TabSample[]): Promise<void> {
+async function goToTab(
+  page: Page,
+  path: TabPath,
+  samples: TabSample[],
+  mountTimeoutMs: number,
+): Promise<void> {
   const url = page.url()
   const onTarget = url.endsWith(path) || url.includes(`${path}?`) || url.includes(`${path}#`)
   if (onTarget) {
@@ -130,7 +178,7 @@ async function goToTab(page: Page, path: TabPath, samples: TabSample[]): Promise
   }
   const expected = EXPECTED_MOUNTED_BY_TAB[path]
   const start = performance.now()
-  const mountedPromise = subscribeMountedComplete(page, expected, start, 30_000)
+  const mountedPromise = subscribeMountedComplete(page, expected, start, mountTimeoutMs)
   await page.goto(path)
   await page.waitForURL(`**${path}`)
   const elapsedMs = await mountedPromise
@@ -142,18 +190,22 @@ interface TabSample {
   ms: number
 }
 
-test('tab navigation mount latency', async ({ page }) => {
-  test.setTimeout(120_000)
+async function collectTabNavigationSamples(
+  page: Page,
+  mountTimeoutMs: number,
+): Promise<TabSample[]> {
   const samples: TabSample[] = []
-
   await page.goto('/home')
   await page.waitForURL('**/home')
 
   const sequence = buildPseudoRandomSequence(0x4e17_2026)
   for (const path of sequence) {
-    await goToTab(page, path, samples)
+    await goToTab(page, path, samples, mountTimeoutMs)
   }
+  return samples
+}
 
+function buildStatRows(samples: TabSample[]): { label: string; ms: number[] }[] {
   const byTab = new Map<TabPath, number[]>()
   for (const p of TAB_PATHS) byTab.set(p, [])
   for (const s of samples) {
@@ -161,27 +213,34 @@ test('tab navigation mount latency', async ({ page }) => {
   }
 
   const allMs = samples.map((s) => s.ms)
-  const rows: { label: string; ms: number[] }[] = [
+  return [
     { label: 'All tabs combined', ms: allMs },
     ...TAB_PATHS.map((p) => ({ label: TAB_LABEL[p], ms: byTab.get(p) ?? [] })),
   ]
+}
 
-  console.log('\n=== Tab navigation benchmark (ms) ===\n')
-  console.log(
-    '| Scope | Avg (ms) | Min | Max | Std dev | Score (avg) | Score (max) |\n|---|---:|---:|---:|---:|---:|---|---|',
-  )
-  for (const { label, ms } of rows) {
-    const avg = mean(ms)
-    const mn = Math.min(...ms)
-    const mx = Math.max(...ms)
-    const sd = stdDev(ms)
-    console.log(
-      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} | ${scoreForMs(mx)} |`,
-    )
+test('tab navigation mount latency — Fast 4G', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Network throttling uses Chromium CDP only.')
+  test.setTimeout(600_000)
+  await emulateNetwork(page, 'fast4g')
+
+  const samples = await collectTabNavigationSamples(page, MOUNT_COMPLETE_TIMEOUT_MS.fast4g)
+  printResultsTable('Fast 4G throttling', buildStatRows(samples))
+
+  for (const s of samples.map((x) => x.ms)) {
+    expect(s).toBeLessThan(120_000)
   }
-  console.log('')
+})
 
-  for (const s of allMs) {
-    expect(s).toBeLessThan(30_000)
+test('tab navigation mount latency — Slow 4G', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Network throttling uses Chromium CDP only.')
+  test.setTimeout(600_000)
+  await emulateNetwork(page, 'slow4g')
+
+  const samples = await collectTabNavigationSamples(page, MOUNT_COMPLETE_TIMEOUT_MS.slow4g)
+  printResultsTable('Slow 4G throttling', buildStatRows(samples))
+
+  for (const s of samples.map((x) => x.ms)) {
+    expect(s).toBeLessThan(120_000)
   }
 })
