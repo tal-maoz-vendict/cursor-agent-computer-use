@@ -41,6 +41,22 @@ const TAB_LABEL: Record<TabPath, string> = {
 
 const VISITS_PER_TAB = 10
 
+/** Chrome DevTools "Fast 4G" preset (bytes/sec + extra latency ms). */
+const FAST_4G = {
+  label: 'Fast 4G',
+  downloadThroughput: (9 * 1_000_000) / 8 * 0.9,
+  uploadThroughput: (1.5 * 1_000_000) / 8 * 0.9,
+  latency: 60 * 2.75,
+} as const
+
+/** Chrome DevTools "Slow 4G" preset (aligned with former Fast 3G). */
+const SLOW_4G = {
+  label: 'Slow 4G',
+  downloadThroughput: (1.6 * 1_000_000) / 8 * 0.9,
+  uploadThroughput: (750 * 1_000) / 8 * 0.9,
+  latency: 150 * 3.75,
+} as const
+
 function mulberry32(seed: number): () => number {
   return () => {
     let t = (seed += 0x6d2b79f5)
@@ -85,6 +101,21 @@ function scoreForMs(ms: number): string {
   return 'Fail'
 }
 
+async function emulateDevToolsNetwork(
+  page: Page,
+  profile: { downloadThroughput: number; uploadThroughput: number; latency: number },
+): Promise<void> {
+  const session = await page.context().newCDPSession(page)
+  await session.send('Network.enable')
+  await session.send('Network.emulateNetworkConditions', {
+    offline: false,
+    downloadThroughput: profile.downloadThroughput,
+    uploadThroughput: profile.uploadThroughput,
+    latency: profile.latency,
+    connectionType: 'cellular4g',
+  })
+}
+
 /** Subscribe before navigation so synchronous onMounted logs are not missed. */
 function subscribeMountedComplete(
   page: Page,
@@ -120,7 +151,12 @@ function subscribeMountedComplete(
   })
 }
 
-async function goToTab(page: Page, path: TabPath, samples: TabSample[]): Promise<void> {
+async function goToTab(
+  page: Page,
+  path: TabPath,
+  samples: TabSample[],
+  mountTimeoutMs: number,
+): Promise<void> {
   const url = page.url()
   const onTarget = url.endsWith(path) || url.includes(`${path}?`) || url.includes(`${path}#`)
   if (onTarget) {
@@ -130,7 +166,7 @@ async function goToTab(page: Page, path: TabPath, samples: TabSample[]): Promise
   }
   const expected = EXPECTED_MOUNTED_BY_TAB[path]
   const start = performance.now()
-  const mountedPromise = subscribeMountedComplete(page, expected, start, 30_000)
+  const mountedPromise = subscribeMountedComplete(page, expected, start, mountTimeoutMs)
   await page.goto(path)
   await page.waitForURL(`**${path}`)
   const elapsedMs = await mountedPromise
@@ -142,18 +178,7 @@ interface TabSample {
   ms: number
 }
 
-test('tab navigation mount latency', async ({ page }) => {
-  test.setTimeout(120_000)
-  const samples: TabSample[] = []
-
-  await page.goto('/home')
-  await page.waitForURL('**/home')
-
-  const sequence = buildPseudoRandomSequence(0x4e17_2026)
-  for (const path of sequence) {
-    await goToTab(page, path, samples)
-  }
-
+function printResultsTable(profileLabel: string, samples: TabSample[]): void {
   const byTab = new Map<TabPath, number[]>()
   for (const p of TAB_PATHS) byTab.set(p, [])
   for (const s of samples) {
@@ -166,9 +191,9 @@ test('tab navigation mount latency', async ({ page }) => {
     ...TAB_PATHS.map((p) => ({ label: TAB_LABEL[p], ms: byTab.get(p) ?? [] })),
   ]
 
-  console.log('\n=== Tab navigation benchmark (ms) ===\n')
+  console.log(`\n=== Tab navigation (${profileLabel}) — ms until all \`vh-main\` subtree components reported Mounted ===\n`)
   console.log(
-    '| Scope | Avg (ms) | Min | Max | Std dev | Score (avg) | Score (max) |\n|---|---:|---:|---:|---:|---:|---|---|',
+    '| Scope | Avg (ms) | Min | Max | Std dev | Score |\n|---|---:|---:|---:|---:|---|',
   )
   for (const { label, ms } of rows) {
     const avg = mean(ms)
@@ -176,12 +201,44 @@ test('tab navigation mount latency', async ({ page }) => {
     const mx = Math.max(...ms)
     const sd = stdDev(ms)
     console.log(
-      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} | ${scoreForMs(mx)} |`,
+      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} |`,
     )
   }
   console.log('')
+}
 
-  for (const s of allMs) {
-    expect(s).toBeLessThan(30_000)
+async function runBenchmark(
+  page: Page,
+  profile: typeof FAST_4G | typeof SLOW_4G,
+  mountTimeoutMs: number,
+): Promise<TabSample[]> {
+  await emulateDevToolsNetwork(page, profile)
+  const samples: TabSample[] = []
+
+  await page.goto('/home')
+  await page.waitForURL('**/home')
+
+  const sequence = buildPseudoRandomSequence(0x4e17_2026)
+  for (const path of sequence) {
+    await goToTab(page, path, samples, mountTimeoutMs)
+  }
+
+  printResultsTable(profile.label, samples)
+  return samples
+}
+
+test('tab navigation mount latency — Fast 4G', async ({ page }) => {
+  test.setTimeout(300_000)
+  const samples = await runBenchmark(page, FAST_4G, 60_000)
+  for (const s of samples.map((x) => x.ms)) {
+    expect(s).toBeLessThan(120_000)
+  }
+})
+
+test('tab navigation mount latency — Slow 4G', async ({ page }) => {
+  test.setTimeout(900_000)
+  const samples = await runBenchmark(page, SLOW_4G, 120_000)
+  for (const s of samples.map((x) => x.ms)) {
+    expect(s).toBeLessThan(180_000)
   }
 })
