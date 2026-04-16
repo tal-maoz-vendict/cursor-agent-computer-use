@@ -40,5 +40,8 @@ __screenshots__/
 /playwright-report/
 /blob-report/
 
+# Local benchmark HTML output
+/benchmarks-output/
+
 # Vite
 *.timestamp-*-*.mjs

@@ -8,7 +8,7 @@
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false",
     "build": "npm run type-check && vite build",
     "preview": "vite preview",
-    "benchmark:tabs": "playwright test benchmarks/tab-navigation.spec.ts"
+    "benchmark:tabs": "playwright test benchmarks/tabs-loading-normal-and-throttle.spec.ts --project=chromium"
   },
   "dependencies": {
     "vue": "^3.5.31",
