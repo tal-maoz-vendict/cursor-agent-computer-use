@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type CDPSession, type Page } from '@playwright/test'
 
 const TAB_PATHS = [
   '/home',
@@ -85,6 +85,47 @@ function scoreForMs(ms: number): string {
   return 'Fail'
 }
 
+/** Chrome DevTools-style presets (bytes/s throughput, ms latency). */
+const NETWORK_PRESETS = {
+  'Fast 4G': {
+    latency: 165,
+    downloadThroughput: 1_012_500,
+    uploadThroughput: 168_750,
+  },
+  'Slow 4G': {
+    latency: 562.5,
+    downloadThroughput: 180_000,
+    uploadThroughput: 84_375,
+  },
+} as const
+
+async function applyNetworkThrottling(
+  page: Page,
+  preset: (typeof NETWORK_PRESETS)[keyof typeof NETWORK_PRESETS],
+): Promise<CDPSession> {
+  const session = await page.context().newCDPSession(page)
+  await session.send('Network.enable')
+  await session.send('Network.emulateNetworkConditions', {
+    offline: false,
+    latency: preset.latency,
+    downloadThroughput: preset.downloadThroughput,
+    uploadThroughput: preset.uploadThroughput,
+    connectionType: 'cellular4g',
+  })
+  return session
+}
+
+async function clearNetworkThrottling(session: CDPSession): Promise<void> {
+  await session.send('Network.emulateNetworkConditions', {
+    offline: false,
+    latency: 0,
+    downloadThroughput: -1,
+    uploadThroughput: -1,
+    connectionType: 'none',
+  })
+  await session.detach()
+}
+
 /** Subscribe before navigation so synchronous onMounted logs are not missed. */
 function subscribeMountedComplete(
   page: Page,
@@ -96,7 +137,7 @@ function subscribeMountedComplete(
   return new Promise<number>((resolve, reject) => {
     const handler = (msg: { text: () => string }) => {
       const text = msg.text()
-      const m = /^Mounted (.+)$/.exec(text)
+      const m = /^onMounted (.+)$/.exec(text)
       if (!m) return
       const name = m[1]
       if (pending.has(name)) {
@@ -142,18 +183,7 @@ interface TabSample {
   ms: number
 }
 
-test('tab navigation mount latency', async ({ page }) => {
-  test.setTimeout(120_000)
-  const samples: TabSample[] = []
-
-  await page.goto('/home')
-  await page.waitForURL('**/home')
-
-  const sequence = buildPseudoRandomSequence(0x4e17_2026)
-  for (const path of sequence) {
-    await goToTab(page, path, samples)
-  }
-
+function printResultsTable(profileLabel: string, samples: TabSample[]): void {
   const byTab = new Map<TabPath, number[]>()
   for (const p of TAB_PATHS) byTab.set(p, [])
   for (const s of samples) {
@@ -166,9 +196,9 @@ test('tab navigation mount latency', async ({ page }) => {
     ...TAB_PATHS.map((p) => ({ label: TAB_LABEL[p], ms: byTab.get(p) ?? [] })),
   ]
 
-  console.log('\n=== Tab navigation benchmark (ms) ===\n')
+  console.log(`\n=== Tab navigation: ${profileLabel} (start → last onMounted in .vh-main, ms) ===\n`)
   console.log(
-    '| Scope | Avg (ms) | Min | Max | Std dev | Score (avg) | Score (max) |\n|---|---:|---:|---:|---:|---:|---|---|',
+    '| Scope | Avg (ms) | Min | Max | Std dev | Score |\n|---|---:|---:|---:|---:|---:|',
   )
   for (const { label, ms } of rows) {
     const avg = mean(ms)
@@ -176,12 +206,50 @@ test('tab navigation mount latency', async ({ page }) => {
     const mx = Math.max(...ms)
     const sd = stdDev(ms)
     console.log(
-      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} | ${scoreForMs(mx)} |`,
+      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} |`,
     )
   }
   console.log('')
+}
 
-  for (const s of allMs) {
-    expect(s).toBeLessThan(30_000)
+async function collectSamples(page: Page): Promise<TabSample[]> {
+  const samples: TabSample[] = []
+  await page.goto('/home')
+  await page.waitForURL('**/home')
+
+  const sequence = buildPseudoRandomSequence(0x4e17_2026)
+  for (const path of sequence) {
+    await goToTab(page, path, samples)
   }
+  return samples
+}
+
+test.describe('tab navigation mount latency', () => {
+  test('Fast 4G throttling', async ({ page }) => {
+    test.setTimeout(600_000)
+    const cdp = await applyNetworkThrottling(page, NETWORK_PRESETS['Fast 4G'])
+    try {
+      const samples = await collectSamples(page)
+      printResultsTable('Fast 4G', samples)
+      for (const s of samples) {
+        expect(s.ms).toBeLessThan(120_000)
+      }
+    } finally {
+      await clearNetworkThrottling(cdp)
+    }
+  })
+
+  test('Slow 4G throttling', async ({ page }) => {
+    test.setTimeout(600_000)
+    const cdp = await applyNetworkThrottling(page, NETWORK_PRESETS['Slow 4G'])
+    try {
+      const samples = await collectSamples(page)
+      printResultsTable('Slow 4G', samples)
+      for (const s of samples) {
+        expect(s.ms).toBeLessThan(120_000)
+      }
+    } finally {
+      await clearNetworkThrottling(cdp)
+    }
+  })
 })
