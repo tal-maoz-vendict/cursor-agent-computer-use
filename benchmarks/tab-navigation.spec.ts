@@ -168,7 +168,7 @@ test('tab navigation mount latency', async ({ page }) => {
 
   console.log('\n=== Tab navigation benchmark (ms) ===\n')
   console.log(
-    '| Scope | Avg (ms) | Min | Max | Std dev | Score (avg) | Score (max) |\n|---|---:|---:|---:|---:|---:|---|---|',
+    '| Scope | Avg (ms) | Min | Max | Std dev | Score |\n|---|---:|---:|---:|---:|---:|',
   )
   for (const { label, ms } of rows) {
     const avg = mean(ms)
@@ -176,7 +176,7 @@ test('tab navigation mount latency', async ({ page }) => {
     const mx = Math.max(...ms)
     const sd = stdDev(ms)
     console.log(
-      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} | ${scoreForMs(mx)} |`,
+      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} |`,
     )
   }
   console.log('')
