@@ -19,7 +19,7 @@ import SidebarNav from '@/components/vendorHubLayout/components/SidebarNav.vue'
 import TopBar from '@/components/vendorHubLayout/components/TopBar.vue'
 
 onMounted(() => {
-  console.log('onMounted VendorHubLayout')
+  console.log('onMounted VendorHubLayout (shell)')
 })
 </script>
 

@@ -43,7 +43,7 @@ const iconPaths: Record<SidebarIcon, string> = {
 }
 
 onMounted(() => {
-  console.log('onMounted SidebarNav')
+  console.log('onMounted SidebarNav (shell)')
 })
 </script>
 

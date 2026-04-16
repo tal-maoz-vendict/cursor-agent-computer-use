@@ -2,7 +2,7 @@
 import { onMounted } from 'vue'
 
 onMounted(() => {
-  console.log('onMounted TopBar')
+  console.log('onMounted TopBar (shell)')
 })
 </script>
 
