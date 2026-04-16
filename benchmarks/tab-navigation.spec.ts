@@ -85,55 +85,80 @@ function scoreForMs(ms: number): string {
   return 'Fail'
 }
 
-/** Subscribe before navigation so synchronous onMounted logs are not missed. */
+/**
+ * Listen for `onMounted <name>` from the tab subtree before navigation.
+ * Call `markStart` immediately before the user action (sidebar click) so elapsed time
+ * matches "enter tab" → last expected mount.
+ */
 function subscribeMountedComplete(
   page: Page,
   expected: string[],
-  startTime: number,
   timeoutMs: number,
-): Promise<number> {
+): { markStart: () => void; finished: Promise<number> } {
   const pending = new Set(expected)
-  return new Promise<number>((resolve, reject) => {
-    const handler = (msg: { text: () => string }) => {
-      const text = msg.text()
-      const m = /^Mounted (.+)$/.exec(text)
-      if (!m) return
-      const name = m[1]
-      if (pending.has(name)) {
-        pending.delete(name)
-        if (pending.size === 0) {
-          page.off('console', handler)
-          clearTimeout(timer)
-          resolve(performance.now() - startTime)
-        }
+  let startTime = 0
+  let timer: ReturnType<typeof setTimeout> | undefined
+
+  let resolveDone: (ms: number) => void = () => {}
+  let rejectDone: (err: Error) => void = () => {}
+  const finished = new Promise<number>((resolve, reject) => {
+    resolveDone = resolve
+    rejectDone = reject
+  })
+
+  const handler = (msg: { text: () => string }) => {
+    const text = msg.text()
+    const m = /^onMounted (.+)$/.exec(text)
+    if (!m || startTime === 0) return
+    const name = m[1]
+    if (pending.has(name)) {
+      pending.delete(name)
+      if (pending.size === 0) {
+        page.off('console', handler)
+        if (timer !== undefined) clearTimeout(timer)
+        resolveDone(performance.now() - startTime)
       }
     }
-    page.on('console', handler)
-    const timer = setTimeout(() => {
+  }
+  page.on('console', handler)
+
+  const markStart = () => {
+    startTime = performance.now()
+    timer = setTimeout(() => {
       page.off('console', handler)
-      reject(
+      rejectDone(
         new Error(
           `Timeout after ${timeoutMs}ms. Still waiting for: ${[...pending].join(', ')}`,
         ),
       )
     }, timeoutMs)
-  })
+  }
+
+  return { markStart, finished }
+}
+
+async function clickSidebarTab(page: Page, path: TabPath): Promise<void> {
+  const label = TAB_LABEL[path]
+  await page
+    .getByRole('navigation', { name: 'Vendor hub tabs' })
+    .getByRole('link', { name: label })
+    .click()
 }
 
 async function goToTab(page: Page, path: TabPath, samples: TabSample[]): Promise<void> {
   const url = page.url()
   const onTarget = url.endsWith(path) || url.includes(`${path}?`) || url.includes(`${path}#`)
   if (onTarget) {
-    const pivot = path === '/home' ? '/library' : '/home'
-    await page.goto(pivot)
+    const pivot: TabPath = path === '/home' ? '/library' : '/home'
+    await clickSidebarTab(page, pivot)
     await page.waitForURL(`**${pivot}`)
   }
   const expected = EXPECTED_MOUNTED_BY_TAB[path]
-  const start = performance.now()
-  const mountedPromise = subscribeMountedComplete(page, expected, start, 30_000)
-  await page.goto(path)
+  const { markStart, finished } = subscribeMountedComplete(page, expected, 30_000)
+  markStart()
+  await clickSidebarTab(page, path)
   await page.waitForURL(`**${path}`)
-  const elapsedMs = await mountedPromise
+  const elapsedMs = await finished
   samples.push({ tab: path, ms: elapsedMs })
 }
 
@@ -168,7 +193,7 @@ test('tab navigation mount latency', async ({ page }) => {
 
   console.log('\n=== Tab navigation benchmark (ms) ===\n')
   console.log(
-    '| Scope | Avg (ms) | Min | Max | Std dev | Score (avg) | Score (max) |\n|---|---:|---:|---:|---:|---:|---|---|',
+    '| Scope | Avg (ms) | Min | Max | Std dev | Score |\n|---|---:|---:|---:|---:|---:|---|',
   )
   for (const { label, ms } of rows) {
     const avg = mean(ms)
@@ -176,7 +201,7 @@ test('tab navigation mount latency', async ({ page }) => {
     const mx = Math.max(...ms)
     const sd = stdDev(ms)
     console.log(
-      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} | ${scoreForMs(mx)} |`,
+      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} |`,
     )
   }
   console.log('')
