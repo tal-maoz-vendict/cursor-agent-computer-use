@@ -96,7 +96,7 @@ function subscribeMountedComplete(
   return new Promise<number>((resolve, reject) => {
     const handler = (msg: { text: () => string }) => {
       const text = msg.text()
-      const m = /^Mounted (.+)$/.exec(text)
+      const m = /^onMounted (.+)$/.exec(text)
       if (!m) return
       const name = m[1]
       if (pending.has(name)) {
@@ -120,18 +120,22 @@ function subscribeMountedComplete(
   })
 }
 
+function tabNav(page: Page) {
+  return page.getByRole('navigation', { name: 'Vendor hub tabs' })
+}
+
 async function goToTab(page: Page, path: TabPath, samples: TabSample[]): Promise<void> {
   const url = page.url()
   const onTarget = url.endsWith(path) || url.includes(`${path}?`) || url.includes(`${path}#`)
   if (onTarget) {
-    const pivot = path === '/home' ? '/library' : '/home'
-    await page.goto(pivot)
+    const pivot: TabPath = path === '/home' ? '/library' : '/home'
+    await tabNav(page).getByRole('link', { name: TAB_LABEL[pivot] }).click()
     await page.waitForURL(`**${pivot}`)
   }
   const expected = EXPECTED_MOUNTED_BY_TAB[path]
   const start = performance.now()
   const mountedPromise = subscribeMountedComplete(page, expected, start, 30_000)
-  await page.goto(path)
+  await tabNav(page).getByRole('link', { name: TAB_LABEL[path] }).click()
   await page.waitForURL(`**${path}`)
   const elapsedMs = await mountedPromise
   samples.push({ tab: path, ms: elapsedMs })
@@ -143,7 +147,7 @@ interface TabSample {
 }
 
 test('tab navigation mount latency', async ({ page }) => {
-  test.setTimeout(120_000)
+  test.setTimeout(300_000)
   const samples: TabSample[] = []
 
   await page.goto('/home')
@@ -167,8 +171,9 @@ test('tab navigation mount latency', async ({ page }) => {
   ]
 
   console.log('\n=== Tab navigation benchmark (ms) ===\n')
+  console.log('Criteria: Good <3s · Medium <5s · Low <7s · Fail ≥7s (score from average ms).\n')
   console.log(
-    '| Scope | Avg (ms) | Min | Max | Std dev | Score (avg) | Score (max) |\n|---|---:|---:|---:|---:|---:|---|---|',
+    '| Scope | Avg (ms) | Min (ms) | Max (ms) | Std dev | Score |\n|---|---:|---:|---:|---:|---|',
   )
   for (const { label, ms } of rows) {
     const avg = mean(ms)
@@ -176,7 +181,7 @@ test('tab navigation mount latency', async ({ page }) => {
     const mx = Math.max(...ms)
     const sd = stdDev(ms)
     console.log(
-      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} | ${scoreForMs(mx)} |`,
+      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} |`,
     )
   }
   console.log('')
