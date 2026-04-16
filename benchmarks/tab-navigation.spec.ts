@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type CDPSession, type Page } from '@playwright/test'
 
 const TAB_PATHS = [
   '/home',
@@ -85,6 +85,46 @@ function scoreForMs(ms: number): string {
   return 'Fail'
 }
 
+/** Chrome DevTools preset values (Network.emulateNetworkConditions). */
+const CHROME_FAST_4G = {
+  latencyMs: 165,
+  downloadBps: 9 * 1_000_000 / 8,
+  uploadBps: 1.5 * 1_000_000 / 8,
+} as const
+
+const CHROME_SLOW_4G = {
+  latencyMs: 562.5,
+  downloadBps: 1.44 * 1_000_000 / 8,
+  uploadBps: 675 * 1_000 / 8,
+} as const
+
+async function applyChromeNetworkPreset(
+  page: Page,
+  preset: { latencyMs: number; downloadBps: number; uploadBps: number },
+): Promise<CDPSession> {
+  const session = await page.context().newCDPSession(page)
+  await session.send('Network.enable')
+  await session.send('Network.emulateNetworkConditions', {
+    offline: false,
+    latency: preset.latencyMs,
+    downloadThroughput: preset.downloadBps,
+    uploadThroughput: preset.uploadBps,
+    connectionType: 'cellular4g',
+  })
+  return session
+}
+
+async function clearNetworkThrottling(session: CDPSession): Promise<void> {
+  await session.send('Network.emulateNetworkConditions', {
+    offline: false,
+    latency: 0,
+    downloadThroughput: -1,
+    uploadThroughput: -1,
+    connectionType: 'none',
+  })
+  await session.detach().catch(() => {})
+}
+
 /** Subscribe before navigation so synchronous onMounted logs are not missed. */
 function subscribeMountedComplete(
   page: Page,
@@ -96,7 +136,7 @@ function subscribeMountedComplete(
   return new Promise<number>((resolve, reject) => {
     const handler = (msg: { text: () => string }) => {
       const text = msg.text()
-      const m = /^Mounted (.+)$/.exec(text)
+      const m = /^onMounted (.+)$/.exec(text)
       if (!m) return
       const name = m[1]
       if (pending.has(name)) {
@@ -142,18 +182,7 @@ interface TabSample {
   ms: number
 }
 
-test('tab navigation mount latency', async ({ page }) => {
-  test.setTimeout(120_000)
-  const samples: TabSample[] = []
-
-  await page.goto('/home')
-  await page.waitForURL('**/home')
-
-  const sequence = buildPseudoRandomSequence(0x4e17_2026)
-  for (const path of sequence) {
-    await goToTab(page, path, samples)
-  }
-
+function printResultsTable(title: string, samples: TabSample[]): void {
   const byTab = new Map<TabPath, number[]>()
   for (const p of TAB_PATHS) byTab.set(p, [])
   for (const s of samples) {
@@ -166,9 +195,9 @@ test('tab navigation mount latency', async ({ page }) => {
     ...TAB_PATHS.map((p) => ({ label: TAB_LABEL[p], ms: byTab.get(p) ?? [] })),
   ]
 
-  console.log('\n=== Tab navigation benchmark (ms) ===\n')
+  console.log(`\n=== ${title} ===\n`)
   console.log(
-    '| Scope | Avg (ms) | Min | Max | Std dev | Score (avg) | Score (max) |\n|---|---:|---:|---:|---:|---:|---|---|',
+    '| Scope | Avg (ms) | Min (ms) | Max (ms) | Std dev (ms) | Score |\n|---|---:|---:|---:|---:|---|',
   )
   for (const { label, ms } of rows) {
     const avg = mean(ms)
@@ -176,12 +205,50 @@ test('tab navigation mount latency', async ({ page }) => {
     const mx = Math.max(...ms)
     const sd = stdDev(ms)
     console.log(
-      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} | ${scoreForMs(mx)} |`,
+      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} |`,
     )
   }
   console.log('')
+}
 
-  for (const s of allMs) {
-    expect(s).toBeLessThan(30_000)
+test('tab navigation mount latency', async ({ page }) => {
+  test.setTimeout(900_000)
+
+  const sequence = buildPseudoRandomSequence(0x4e17_2026)
+
+  const fastSession = await applyChromeNetworkPreset(page, CHROME_FAST_4G)
+  try {
+    await page.goto('/home')
+    await page.waitForURL('**/home')
+
+    const fastSamples: TabSample[] = []
+    for (const path of sequence) {
+      await goToTab(page, path, fastSamples)
+    }
+    printResultsTable('Fast 4G throttling — tab navigation (start: navigation, end: last onMounted in .vh-main)', fastSamples)
+
+    for (const s of fastSamples.map((x) => x.ms)) {
+      expect(s).toBeLessThan(120_000)
+    }
+  } finally {
+    await clearNetworkThrottling(fastSession)
+  }
+
+  const slowSession = await applyChromeNetworkPreset(page, CHROME_SLOW_4G)
+  try {
+    await page.goto('/home')
+    await page.waitForURL('**/home')
+
+    const slowSamples: TabSample[] = []
+    for (const path of sequence) {
+      await goToTab(page, path, slowSamples)
+    }
+    printResultsTable('Slow 4G throttling — tab navigation (start: navigation, end: last onMounted in .vh-main)', slowSamples)
+
+    for (const s of slowSamples.map((x) => x.ms)) {
+      expect(s).toBeLessThan(120_000)
+    }
+  } finally {
+    await clearNetworkThrottling(slowSession)
   }
 })
