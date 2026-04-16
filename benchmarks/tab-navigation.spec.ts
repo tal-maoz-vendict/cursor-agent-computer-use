@@ -1,5 +1,34 @@
 import { expect, test, type Page } from '@playwright/test'
 
+/**
+ * Chromium CDP presets aligned with common DevTools/Lighthouse-style cellular
+ * throughput (bytes/s) and minimum RTT (ms). Used only for benchmark runs.
+ */
+const CDP_FAST_4G = {
+  offline: false,
+  downloadThroughput: (9 * 1024 * 1024) / 8,
+  uploadThroughput: (4 * 1024 * 1024) / 8,
+  latency: 20,
+  connectionType: 'cellular4g' as const,
+}
+
+const CDP_SLOW_4G = {
+  offline: false,
+  downloadThroughput: (1.5 * 1024 * 1024) / 8,
+  uploadThroughput: (750 * 1024) / 8,
+  latency: 150,
+  connectionType: 'cellular4g' as const,
+}
+
+async function emulateNetwork(
+  page: Page,
+  preset: typeof CDP_FAST_4G | typeof CDP_SLOW_4G,
+): Promise<void> {
+  const client = await page.context().newCDPSession(page)
+  await client.send('Network.enable')
+  await client.send('Network.emulateNetworkConditions', preset)
+}
+
 const TAB_PATHS = [
   '/home',
   '/risk-per-domain',
@@ -96,7 +125,7 @@ function subscribeMountedComplete(
   return new Promise<number>((resolve, reject) => {
     const handler = (msg: { text: () => string }) => {
       const text = msg.text()
-      const m = /^Mounted (.+)$/.exec(text)
+      const m = /^onMounted (.+)$/.exec(text)
       if (!m) return
       const name = m[1]
       if (pending.has(name)) {
@@ -142,18 +171,7 @@ interface TabSample {
   ms: number
 }
 
-test('tab navigation mount latency', async ({ page }) => {
-  test.setTimeout(120_000)
-  const samples: TabSample[] = []
-
-  await page.goto('/home')
-  await page.waitForURL('**/home')
-
-  const sequence = buildPseudoRandomSequence(0x4e17_2026)
-  for (const path of sequence) {
-    await goToTab(page, path, samples)
-  }
-
+function printResultsTable(profile: string, samples: TabSample[]): void {
   const byTab = new Map<TabPath, number[]>()
   for (const p of TAB_PATHS) byTab.set(p, [])
   for (const s of samples) {
@@ -166,9 +184,9 @@ test('tab navigation mount latency', async ({ page }) => {
     ...TAB_PATHS.map((p) => ({ label: TAB_LABEL[p], ms: byTab.get(p) ?? [] })),
   ]
 
-  console.log('\n=== Tab navigation benchmark (ms) ===\n')
+  console.log(`\n=== Tab navigation benchmark — ${profile} (ms) ===\n`)
   console.log(
-    '| Scope | Avg (ms) | Min | Max | Std dev | Score (avg) | Score (max) |\n|---|---:|---:|---:|---:|---:|---|---|',
+    '| Scope | Avg (ms) | Min | Max | Std dev | Score |\n|---|---:|---:|---:|---:|---|',
   )
   for (const { label, ms } of rows) {
     const avg = mean(ms)
@@ -176,12 +194,44 @@ test('tab navigation mount latency', async ({ page }) => {
     const mx = Math.max(...ms)
     const sd = stdDev(ms)
     console.log(
-      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} | ${scoreForMs(mx)} |`,
+      `| ${label} | ${avg.toFixed(1)} | ${mn.toFixed(1)} | ${mx.toFixed(1)} | ${sd.toFixed(1)} | ${scoreForMs(avg)} |`,
     )
   }
   console.log('')
+}
 
-  for (const s of allMs) {
-    expect(s).toBeLessThan(30_000)
+async function collectTabNavigationSamples(page: Page): Promise<TabSample[]> {
+  const samples: TabSample[] = []
+  await page.goto('/home')
+  await page.waitForURL('**/home')
+
+  const sequence = buildPseudoRandomSequence(0x4e17_2026)
+  for (const path of sequence) {
+    await goToTab(page, path, samples)
   }
+  return samples
+}
+
+test.describe('tab navigation mount latency', () => {
+  test('Fast 4G throttling', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'Network throttling uses Chromium CDP')
+    test.setTimeout(600_000)
+    await emulateNetwork(page, CDP_FAST_4G)
+    const samples = await collectTabNavigationSamples(page)
+    printResultsTable('Fast 4G', samples)
+    for (const s of samples.map((x) => x.ms)) {
+      expect(s).toBeLessThan(120_000)
+    }
+  })
+
+  test('Slow 4G throttling', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'Network throttling uses Chromium CDP')
+    test.setTimeout(600_000)
+    await emulateNetwork(page, CDP_SLOW_4G)
+    const samples = await collectTabNavigationSamples(page)
+    printResultsTable('Slow 4G', samples)
+    for (const s of samples.map((x) => x.ms)) {
+      expect(s).toBeLessThan(180_000)
+    }
+  })
 })
